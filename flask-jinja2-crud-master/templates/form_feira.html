@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block titulo %}Cadastrar feira{% endblock %}
+{% block conteudo %}
+    <form action="/feira/novo" method="POST">
+        <p>
+            <label for="bairro">Bairro:</label>
+            <input type="text" id="bairro" name="bairro" autocomplete="off" />
+        </p>
+        <p>
+            <button type="submit">Salvar</button>
+        </p>
+    </form>
+    <p><a href="/">Voltar</a></p>
+{% endblock %}

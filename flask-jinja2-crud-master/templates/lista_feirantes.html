@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block titulo %}Feirantes{% endblock %}
+{% block conteudo %}
+    <h1>Feirantes:</h1>
+    <table>
+        <tr>
+            <td>ID</td>
+            <td>Nome</td>
+            <td>Barraca</td>
+            <td>Sexo</td>
+            <td>feira</td>
+            <td>&nbsp;</td>
+        </tr>
+        {% for feirante in feirantes %}
+            <tr>
+                <td>{{feirante['id_feirante']}}</td>
+                <td>{{feirante['nome']}}</td>
+                <td>{{feirante['barraca']}}</td>
+                <td>{% if feirante['sexo'] == 'M' %}Masculino{% else %}Feminino{% endif %}</td>
+                <td>{{feirante['feira']}}</td>
+                <td><a href="/feirante/{{feirante['id_feirante']}}">Editar</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+    <p><a href="/">Voltar</a></p>
+{% endblock %}
