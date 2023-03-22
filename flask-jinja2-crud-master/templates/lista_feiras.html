@@ -6,11 +6,15 @@
         <tr>
             <td>ID</td>
             <td>Bairro</td>
+            <td>horario</td>
+            <td>dia</td>
         </tr>
         {% for feira in feiras %}
             <tr>
                 <td>{{feira['id_feira']}}</td>
                 <td>{{feira['bairro']}}</td>
+                <td>{{feira['horario']}}</td>
+                <td>{{feira['dia']}}</td>
             </tr>
         {% endfor %}
     </table>

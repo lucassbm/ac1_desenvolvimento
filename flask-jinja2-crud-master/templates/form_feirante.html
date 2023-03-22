@@ -76,11 +76,11 @@
         {% endif %}
         <p>
             <label for="nome">Nome:</label>
-            <input type="text" id="nome" name="nome" autocomplete="off" value="{{feirante['nome']}}" />
+            <input type="text" id="nome" name="nome" autocomplete="off" value="{{feirante['nome']}}" required />
         </p>
         <p>
             <label for="barraca">Barraca:</label>
-            <input type="text" id="barraca" name="barraca" autocomplete="off" value="{{feirante['barraca']}}" />
+            <input type="text" id="barraca" name="barraca" autocomplete="off" value="{{feirante['barraca']}}" required/>
         </p>
         <p>
             <label>Sexo:</label>
@@ -109,7 +109,7 @@
             {% endif  %}
         </p>
         <p>
-            <button type="button" onclick="javascript:salvar();">Salvar</button>
+            <button type="submit">Salvar</button>
             {% if feirante['id_feirante'] != 'novo' %}<button type="button" onclick="javascript:excluir();">Excluir</button>{% endif %}
         </p>
     </form>

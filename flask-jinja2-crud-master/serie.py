@@ -113,9 +113,11 @@ def criar_feira_api():
 
     # Extrai os dados do formulário.
     bairro = request.form["bairro"]
+    horario = request.form["horario"]
+    dia = request.form["dia"]
 
     # Faz o processamento.
-    ja_existia, feira = criar_feira(bairro)
+    ja_existia, feira = criar_feira(bairro, horario, dia)
 
     # Monta a resposta.
     mensagem = f"A feira do bairro {bairro} já existia com o id {feira['id_feira']}." if ja_existia else f"A feira do bairro {bairro} foi criada com id {feira['id_feira']}."
@@ -277,7 +279,7 @@ def salvar_arquivo_upload():
         if e in ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp']:
             u = uuid.uuid1()
             n = f"{u}.{e}"
-            foto.save(os.path.join("feirantes_fotos", n))
+            foto.save(os.path.join("ac1_desenvolvimento-master","flask-jinja2-crud-master/feirantes_fotos", n))
             return n
     return ""
 
@@ -296,10 +298,10 @@ def autenticar_login():
 #### Definições de regras de negócio. ####
 ##########################################
 
-def criar_feira(bairro):
-    feira_ja_existe = db_verificar_feira(bairro)
+def criar_feira(bairro, horario, dia):
+    feira_ja_existe = db_verificar_feira(bairro, horario, dia)
     if feira_ja_existe is not None: return True, feira_ja_existe
-    feira_nova = db_criar_feira(bairro)
+    feira_nova = db_criar_feira(bairro, horario, dia)
     return False, feira_nova
 
 def criar_feirante(nome, barraca, sexo, id_feira, salvar_foto):
@@ -349,6 +351,8 @@ sql_create ="""
 CREATE TABLE IF NOT EXISTS feira (
     id_feira INTEGER PRIMARY KEY AUTOINCREMENT,
     bairro VARCHAR(50) NOT NULL,
+    horario VARCHAR(50) NOT NULL,
+    dia VARCHAR(50) NOT NULL,
     UNIQUE(bairro)
 );
 
@@ -389,17 +393,17 @@ def db_inicializar():
 
 def db_listar_feiras():
     with closing(conectar()) as con, closing(con.cursor()) as cur:
-        cur.execute("SELECT id_feira, bairro FROM feira")
+        cur.execute("SELECT id_feira, bairro, horario, dia FROM feira")
         return rows_to_dict(cur.description, cur.fetchall())
 
 def db_listar_feiras_ordem():
     with closing(conectar()) as con, closing(con.cursor()) as cur:
-        cur.execute("SELECT id_feira, bairro FROM feira ORDER BY bairro")
+        cur.execute("SELECT id_feira, bairro, horario, dia FROM feira ORDER BY bairro")
         return rows_to_dict(cur.description, cur.fetchall())
 
-def db_verificar_feira(bairro):
+def db_verificar_feira(bairro, horario, dia):
     with closing(conectar()) as con, closing(con.cursor()) as cur:
-        cur.execute("SELECT id_feira, bairro FROM feira WHERE bairro = ? ", [bairro])
+        cur.execute("SELECT id_feira, bairro, horario, dia FROM feira WHERE bairro = ? AND horario = ? AND dia = ? ", [bairro, horario, dia])
         return row_to_dict(cur.description, cur.fetchone())
 
 def db_consultar_feirante(id_feirante):
@@ -412,12 +416,12 @@ def db_listar_feirantes():
         cur.execute("SELECT fe.id_feirante, fe.nome, fe.barraca, fe.sexo, fe.id_feira, fe.id_foto, f.bairro FROM feirante fe INNER JOIN feira f ON fe.id_feira = f.id_feira")
         return rows_to_dict(cur.description, cur.fetchall())
 
-def db_criar_feira(bairro):
+def db_criar_feira(bairro, horario, dia):
     with closing(conectar()) as con, closing(con.cursor()) as cur:
-        cur.execute("INSERT INTO feira (bairro) VALUES (?)", [bairro])
+        cur.execute("INSERT INTO feira (bairro, horario, dia) VALUES (?, ?, ?)", [bairro, horario, dia])
         id_feira = cur.lastrowid
         con.commit()
-        return {'id_feira': id_feira, 'bairro': bairro}
+        return {'id_feira': id_feira, 'bairro': bairro, 'horario': horario, 'dia': dia}
 
 def db_criar_feirante(nome, barraca, sexo, id_feira, id_foto):
     with closing(conectar()) as con, closing(con.cursor()) as cur:
