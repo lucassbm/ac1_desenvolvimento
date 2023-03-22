@@ -149,7 +149,7 @@ def form_criar_feirante_api():
 
     # Faz o processamento.
     lista = db_listar_feiras_ordem()
-    feirante = {'id_feirante': 'novo', 'nome': '', 'barraca': '', 'sexo': '', 'id_feira': '', 'id_foto': ''}
+    feirante = {'id_feirante': 'novo', 'nome_feirante': '', 'barraca': '', 'sexo': '', 'id_feira': '', 'id_foto': ''}
 
     # Monta a resposta.
     return render_template("form_feirante.html", logado = logado, feirante = feirante, feiras = lista)
@@ -180,16 +180,16 @@ def criar_feirante_api():
         return redirect("/")
 
     # Extrai os dados do formulário.
-    nome = request.form["nome"]
+    nome_feirante = request.form["nome_feirante"]
     sexo = request.form["sexo"]
     barraca = request.form["barraca"]
     id_feira = request.form["id_feira"]
 
     # Faz o processamento.
-    feirante = criar_feirante(nome, barraca, sexo, id_feira, salvar_arquivo_upload)
+    feirante = criar_feirante(nome_feirante, barraca, sexo, id_feira, salvar_arquivo_upload)
 
     # Monta a resposta.
-    mensagem = f"O feirante {nome} foi criado com o id {feirante['id_feirante']}." if sexo == "M" else f"A feirante {nome} foi criada com o id {feirante['id_feirante']}."
+    mensagem = f"O feirante {nome_feirante} foi criado com o id {feirante['id_feirante']}." if sexo == "M" else f"A feirante {nome_feirante} foi criada com o id {feirante['id_feirante']}."
     return render_template("menu.html", logado = logado, mensagem = mensagem)
 
 # Processa o formulário de alteração de alunos. Inclui upload de fotos.
@@ -201,19 +201,19 @@ def editar_feirante_api(id_feirante):
         return redirect("/")
 
     # Extrai os dados do formulário.
-    nome = request.form["nome"]
+    nome_feirante = request.form["nome_feirante"]
     sexo = request.form["sexo"]
     barraca = request.form["barraca"]
     id_feira = request.form["id_feira"]
 
     # Faz o processamento.
-    status, feirante = editar_feirante(id_feirante, nome, barraca, sexo, id_feira, salvar_arquivo_upload, deletar_foto)
+    status, feirante = editar_feirante(id_feirante, nome_feirante, barraca, sexo, id_feira, salvar_arquivo_upload, deletar_foto)
 
     # Monta a resposta.
     if status == 'não existe':
         mensagem = "Esse feirante nem mesmo existia mais." if sexo == "M" else "Essa feirante nem mesmo existia mais."
         return render_template("menu.html", logado = logado, mensagem = mensagem), 404
-    mensagem = f"O feirante {nome} com o id {id_feirante} foi editado." if sexo == "M" else f"A feirante {nome} com o id {id_feirante} foi editada."
+    mensagem = f"O feirante {nome_feirante} com o id {id_feirante} foi editado." if sexo == "M" else f"A feirante {nome_feirante} com o id {id_feirante} foi editada."
     return render_template("menu.html", logado = logado, mensagem = mensagem)
 
 # Processa o botão de excluir um aluno.
@@ -263,6 +263,146 @@ def feirante_deletar_foto(id_foto):
     # Monta a resposta.
     return ""
 
+@app.route("/produto")
+def listar_produtos_api():
+    # Autenticação.
+    logado = autenticar_login()
+    if logado is None:
+        return redirect("/")
+
+    # Faz o processamento.
+    lista = db_listar_produtos()
+    print(lista)
+
+    # Monta a resposta.
+    return render_template("lista_produtos.html", logado = logado, produtos = lista)
+
+# Tela com o formulário de criação de um novo aluno.
+@app.route("/produto/novo", methods = ["GET"])
+def form_criar_produto_api():
+    # Autenticação.
+    logado = autenticar_login()
+    if logado is None:
+        return redirect("/")
+
+    # Faz o processamento.
+    lista = db_listar_feiras_ordem()
+    produto = {'id_produto': 'novo', 'nome_produto': '', 'valor': '', 'quantidade': '', 'id_feira': '','id_feirante': '', 'id_foto_prod': ''}
+
+    # Monta a resposta.
+    return render_template("form_produto.html", logado = logado, produto = produto, feiras = lista)
+
+# Tela com o formulário de alteração de um aluno existente.
+@app.route("/produto/<int:id_produto>", methods = ["GET"])
+def form_alterar_produto_api(id_produto):
+    # Autenticação.
+    logado = autenticar_login()
+    if logado is None:
+        return redirect("/")
+
+    # Faz o processamento.
+    produto = db_consultar_produto(id_produto)
+    feiras = db_listar_feiras_ordem()
+
+    # Monta a resposta.
+    if produto is None:
+        return render_template("menu.html", logado = logado, mensagem = f"Esse produto não existe."), 404
+    return render_template("form_produto.html", logado = logado, produto = produto, feiras = feiras)
+
+# Processa o formulário de criação de alunos. Inclui upload de fotos.
+@app.route("/produto/novo", methods = ["POST"])
+def criar_produto_api():
+    # Autenticação.
+    logado = autenticar_login()
+    if logado is None:
+        return redirect("/")
+
+    # Extrai os dados do formulário.
+    nome_produto = request.form["nome_produto"]
+    valor = request.form["valor"]
+    quantidade = request.form["quantidade"]
+    id_feira = request.form["id_feira"]
+    id_feirante = request.form["id_feirante"]
+
+    # Faz o processamento.
+    produto = criar_produto(nome_produto, valor, quantidade, id_feira, id_feirante, salvar_arquivo_upload)
+
+    # Monta a resposta.
+    mensagem = f"O produto {nome_produto} foi criado com o id {produto['id_produto']}." 
+    return render_template("menu.html", logado = logado, mensagem = mensagem)
+
+# Processa o formulário de alteração de alunos. Inclui upload de fotos.
+@app.route("/produto/<int:id_produto>", methods = ["POST"])
+def editar_produto_api(id_produto):
+    # Autenticação.
+    logado = autenticar_login()
+    if logado is None:
+        return redirect("/")
+
+    # Extrai os dados do formulário.
+    nome_produto = request.form["nome_produto"]
+    valor = request.form["valor"]
+    quantidade = request.form["quantidade"]
+    id_feira = request.form["id_feira"]
+    id_feirante = request.form["id_feirante"]
+
+    # Faz o processamento.
+    status, produto = editar_produto(id_produto, nome_produto, valor, quantidade, id_feira, id_feirante, salvar_arquivo_upload, deletar_foto)
+
+    # Monta a resposta.
+    if status == 'não existe':
+        mensagem = "Esse produto nem mesmo existia mais." 
+        return render_template("menu.html", logado = logado, mensagem = mensagem), 404
+    mensagem = f"O produto {nome_produto} com o id {id_produto} foi editado." 
+    return render_template("menu.html", logado = logado, mensagem = mensagem)
+
+# Processa o botão de excluir um aluno.
+@app.route("/produto/<int:id_produto>", methods = ["DELETE"])
+def deletar_produto_api(id_produto):
+    # Autenticação.
+    logado = autenticar_login()
+    if logado is None:
+        return redirect("/")
+
+    # Faz o processamento.
+    produto = apagar_produto(id_produto)
+
+    # Monta a resposta.
+    if produto is None:
+        return render_template("menu.html", logado = logado, mensagem = "Esse produto nem mesmo existia mais."), 404
+    mensagem = f"O produto com o id {id_produto} foi excluído." 
+    return render_template("menu.html", logado = logado, mensagem = mensagem)
+
+### Fotos dos alunos. ###
+
+# Faz o download de uma foto.
+@app.route("/produto/foto/<id_foto_prod>")
+def produto_download_foto(id_foto_prod):
+    # Autenticação.
+    logado = autenticar_login()
+    if logado is None:
+        return redirect("/")
+
+    # Monta a resposta.
+    try:
+        return send_from_directory("produtos_fotos", id_foto_prod)
+    except werkzeug.exceptions.NotFound as x:
+        return send_from_directory("static", "no-photo.png")
+
+# Deleta uma foto.
+@app.route("/produto/foto/<id_foto_prod>", methods = ["DELETE"])
+def produto_deletar_foto(id_foto_prod):
+    # Autenticação.
+    logado = autenticar_login()
+    if logado is None:
+        return redirect("/")
+
+    # Faz o processamento.
+    deletar_foto(id_foto_prod)
+
+    # Monta a resposta.
+    return ""
+
 ###############################################
 #### Coisas internas da controller da API. ####
 ###############################################
@@ -279,7 +419,7 @@ def salvar_arquivo_upload():
         if e in ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp']:
             u = uuid.uuid1()
             n = f"{u}.{e}"
-            foto.save(os.path.join("ac1_desenvolvimento-master","flask-jinja2-crud-master/feirantes_fotos", n))
+            foto.save(os.path.join("flask-jinja2-crud-master","feirantes_fotos", n))
             return n
     return ""
 
@@ -304,10 +444,10 @@ def criar_feira(bairro, horario, dia):
     feira_nova = db_criar_feira(bairro, horario, dia)
     return False, feira_nova
 
-def criar_feirante(nome, barraca, sexo, id_feira, salvar_foto):
-    return db_criar_feirante(nome, barraca, sexo, id_feira, salvar_foto())
+def criar_feirante(nome_feirante, barraca, sexo, id_feira, salvar_foto):
+    return db_criar_feirante(nome_feirante, barraca, sexo, id_feira, salvar_foto())
 
-def editar_feirante(id_feirante, nome, barraca, sexo, id_feira, salvar_foto, apagar_foto):
+def editar_feirante(id_feirante, nome_feirante, barraca, sexo, id_feira, salvar_foto, apagar_foto):
     feirante = db_consultar_feirante(id_feirante)
     if feirante is None:
         return 'não existe', None
@@ -316,13 +456,33 @@ def editar_feirante(id_feirante, nome, barraca, sexo, id_feira, salvar_foto, apa
         id_foto = feirante["id_foto"]
     else:
         apagar_foto(feirante["id_foto"])
-    db_editar_feirante(id_feirante, nome, barraca, sexo, id_feira, id_foto)
+    db_editar_feirante(id_feirante, nome_feirante, barraca, sexo, id_feira, id_foto)
     return 'alterado', feirante
 
 def apagar_feirante(id_feirante):
     feirante = db_consultar_feirante(id_feirante)
     if feirante is not None: db_deletar_feirante(id_feirante)
     return feirante
+
+def criar_produto(nome_produto, valor, quantidade, id_feira, id_feirante, salvar_foto):
+    return db_criar_produto(nome_produto, valor, quantidade, id_feira, id_feirante, salvar_foto())
+
+def editar_produto(id_produto, nome_produto, valor, quantidade, id_feira, id_feirante, salvar_foto, apagar_foto):
+    produto = db_consultar_produto(id_produto)
+    if produto is None:
+        return 'não existe', None
+    id_foto_prod = salvar_foto()
+    if id_foto_prod == "":
+        id_foto_prod = produto["id_foto_prod"]
+    else:
+        apagar_foto(produto["id_foto_prod"])
+    db_editar_produto(id_produto, nome_produto, valor, quantidade, id_feira, id_feirante, id_foto_prod)
+    return 'alterado', produto
+
+def apagar_produto(id_produto):
+    produto = db_consultar_produto(id_produto)
+    if produto is not None: db_deletar_produto(id_produto)
+    return produto
 
 ###############################################
 #### Funções auxiliares de banco de dados. ####
@@ -358,7 +518,7 @@ CREATE TABLE IF NOT EXISTS feira (
 
 CREATE TABLE IF NOT EXISTS feirante (
     id_feirante INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome VARCHAR(50) NOT NULL,
+    nome_feirante VARCHAR(50) NOT NULL,
     barraca VARCHAR(50) NOT NULL,
     sexo VARCHAR(1) NOT NULL,
     id_feira INTEGER NOT NULL,
@@ -366,6 +526,18 @@ CREATE TABLE IF NOT EXISTS feirante (
     FOREIGN KEY(id_feira) REFERENCES feira(id_feira)
 );
 
+CREATE TABLE IF NOT EXISTS produto (
+    id_produto INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome_produto VARCHAR(50) NOT NULL,
+    valor VARCHAR(50) NOT NULL,
+    quantidade VARCHAR(1) NOT NULL,
+    id_feira INTEGER NOT NULL,
+    id_feirante INTEGER NOT NULL,
+    id_foto_prod VARCHAR(50) NOT NULL,
+    FOREIGN KEY(id_feira) REFERENCES feira(id_feira)
+    FOREIGN KEY(id_feirante) REFERENCES feirante(id_feirante)
+);
+    
 CREATE TABLE IF NOT EXISTS usuario (
     login VARCHAR(50) PRIMARY KEY NOT NULL,
     senha VARCHAR(50) NOT NULL,
@@ -406,14 +578,42 @@ def db_verificar_feira(bairro, horario, dia):
         cur.execute("SELECT id_feira, bairro, horario, dia FROM feira WHERE bairro = ? AND horario = ? AND dia = ? ", [bairro, horario, dia])
         return row_to_dict(cur.description, cur.fetchone())
 
+def db_consultar_produto(id_produto):
+    with closing(conectar()) as con, closing(con.cursor()) as cur:
+        cur.execute("SELECT prod.id_produto, prod.nome_produto, prod.valor, prod.quantidade, prod.id_feira, prod.id_feirante, f.bairro, fe.nome_feirante, fe.barraca FROM produto prod INNER JOIN feira f ON prod.id_feira = f.id_feira INNER JOIN feirante fe ON prod.id_feirante = fe.id_feirante WHERE prod.id_produto = ? ", [id_produto])
+        return row_to_dict(cur.description, cur.fetchone())
+    
+def db_listar_produtos():
+    with closing(conectar()) as con, closing(con.cursor()) as cur:
+        cur.execute("SELECT prod.id_produto, prod.nome_produto, prod.valor, prod.quantidade, prod.id_feira, prod.id_feirante, f.bairro, fe.nome_feirante, fe.barraca FROM produto prod INNER JOIN feira f ON prod.id_feira = f.id_feira INNER JOIN feirante fe ON prod.id_feirante = fe.id_feirante ORDER BY prod.nome_produto ASC")
+        return rows_to_dict(cur.description, cur.fetchall())
+
+def db_criar_produto(nome_produto, valor, quantidade, id_feira, id_feirante, id_foto_prod):
+    with closing(conectar()) as con, closing(con.cursor()) as cur:
+        cur.execute("INSERT INTO produto (nome_produto, valor, quantidade, id_feira, id_feirante, id_foto_prod) VALUES (?, ?, ?, ?, ?, ?)", [nome_produto, valor, quantidade, id_feira, id_feirante, id_foto_prod])
+        id_produto = cur.lastrowid
+        con.commit()
+        return {'id_produto': id_produto, 'nome_produto': nome_produto, 'valor': valor, 'quantidade': quantidade, 'id_feira': id_feira, 'id_feirante': id_feirante, 'id_foto_prod': id_foto_prod}
+    
+def db_editar_produto(id_produto, nome_produto, valor, quantidade, id_feira, id_feirante, id_foto_prod):
+    with closing(conectar()) as con, closing(con.cursor()) as cur:
+        cur.execute("UPDATE produto SET nome_produto = ?,valor = ?, quantidade = ?, id_feira = ?, id_feirante = ?, id_foto_prod = ? WHERE id_produto = ?", [nome_produto, valor, quantidade, id_feira, id_feirante, id_foto_prod])
+        con.commit()
+        return {'id_produto': id_produto, 'nome_produto': nome_produto, 'valor': valor, 'quantidade': quantidade, 'id_feira': id_feira, 'id_feirante': id_feirante, 'id_foto_prod': id_foto_prod}
+    
+def db_deletar_produto(id_produto):
+    with closing(conectar()) as con, closing(con.cursor()) as cur:
+        cur.execute("DELETE FROM produto WHERE id_produto = ?", [id_produto])
+        con.commit()
+
 def db_consultar_feirante(id_feirante):
     with closing(conectar()) as con, closing(con.cursor()) as cur:
-        cur.execute("SELECT fe.id_feirante, fe.nome, fe.barraca, fe.sexo, fe.id_feira, fe.id_foto, f.bairro FROM feirante fe INNER JOIN feira f ON fe.id_feira = f.id_feira WHERE fe.id_feirante = ?", [id_feirante])
+        cur.execute("SELECT fe.id_feirante, fe.nome_feirante, fe.barraca, fe.sexo, fe.id_feira, fe.id_foto, f.bairro FROM feirante fe INNER JOIN feira f ON fe.id_feira = f.id_feira WHERE fe.id_feirante = ?", [id_feirante])
         return row_to_dict(cur.description, cur.fetchone())
 
 def db_listar_feirantes():
     with closing(conectar()) as con, closing(con.cursor()) as cur:
-        cur.execute("SELECT fe.id_feirante, fe.nome, fe.barraca, fe.sexo, fe.id_feira, fe.id_foto, f.bairro FROM feirante fe INNER JOIN feira f ON fe.id_feira = f.id_feira")
+        cur.execute("SELECT fe.id_feirante, fe.nome_feirante, fe.barraca, fe.sexo, fe.id_feira, fe.id_foto, f.bairro FROM feirante fe INNER JOIN feira f ON fe.id_feira = f.id_feira")
         return rows_to_dict(cur.description, cur.fetchall())
 
 def db_criar_feira(bairro, horario, dia):
@@ -423,18 +623,18 @@ def db_criar_feira(bairro, horario, dia):
         con.commit()
         return {'id_feira': id_feira, 'bairro': bairro, 'horario': horario, 'dia': dia}
 
-def db_criar_feirante(nome, barraca, sexo, id_feira, id_foto):
+def db_criar_feirante(nome_feirante, barraca, sexo, id_feira, id_foto):
     with closing(conectar()) as con, closing(con.cursor()) as cur:
-        cur.execute("INSERT INTO feirante (nome, barraca, sexo, id_feira, id_foto) VALUES (?, ?, ?, ?, ?)", [nome, barraca, sexo, id_feira, id_foto])
+        cur.execute("INSERT INTO feirante (nome_feirante, barraca, sexo, id_feira, id_foto) VALUES (?, ?, ?, ?, ?)", [nome_feirante, barraca, sexo, id_feira, id_foto])
         id_feirante = cur.lastrowid
         con.commit()
-        return {'id_feirante': id_feirante, 'nome': nome, 'barraca': barraca, 'sexo': sexo, 'id_feira': id_feira, 'id_foto': id_foto}
+        return {'id_feirante': id_feirante, 'nome_feirante': nome_feirante, 'barraca': barraca, 'sexo': sexo, 'id_feira': id_feira, 'id_foto': id_foto}
 
-def db_editar_feirante(id_feirante, nome, barraca, sexo, id_feira, id_foto):
+def db_editar_feirante(id_feirante, nome_feirante, barraca, sexo, id_feira, id_foto):
     with closing(conectar()) as con, closing(con.cursor()) as cur:
-        cur.execute("UPDATE feirante SET nome = ?, barraca = ?, sexo = ?, id_feira = ?, id_foto = ? WHERE id_feirante = ?", [nome, barraca, sexo, id_feira, id_foto, id_feirante])
+        cur.execute("UPDATE feirante SET nome_feirante = ?, barraca = ?, sexo = ?, id_feira = ?, id_foto = ? WHERE id_feirante = ?", [nome_feirante, barraca, sexo, id_feira, id_foto, id_feirante])
         con.commit()
-        return {'id_feirante': id_feirante, 'nome': nome, 'barraca': barraca, 'sexo': sexo, 'id_feira': id_feira, 'id_foto': id_foto}
+        return {'id_feirante': id_feirante, 'nome_feirante': nome_feirante, 'barraca': barraca, 'sexo': sexo, 'id_feira': id_feira, 'id_foto': id_foto}
 
 def db_deletar_feirante(id_feirante):
     with closing(conectar()) as con, closing(con.cursor()) as cur:

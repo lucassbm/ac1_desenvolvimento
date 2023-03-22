@@ -14,10 +14,10 @@
         {% for feirante in feirantes %}
             <tr>
                 <td>{{feirante['id_feirante']}}</td>
-                <td>{{feirante['nome']}}</td>
+                <td>{{feirante['nome_feirante']}}</td>
                 <td>{{feirante['barraca']}}</td>
                 <td>{% if feirante['sexo'] == 'M' %}Masculino{% else %}Feminino{% endif %}</td>
-                <td>{{feirante['feira']}}</td>
+                <td>{{feirante['bairro']}}</td>
                 <td><a href="/feirante/{{feirante['id_feirante']}}">Editar</a></td>
             </tr>
         {% endfor %}
