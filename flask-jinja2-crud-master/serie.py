@@ -368,7 +368,7 @@ def deletar_produto_api(id_produto):
 
     # Faz o processamento.
     produto = apagar_produto(id_produto)
-
+    print(produto)
     # Monta a resposta.
     if produto is None:
         return render_template("menu.html", logado = logado, mensagem = "Esse produto nem mesmo existia mais."), 404
