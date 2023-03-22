@@ -111,7 +111,7 @@
         <p>
             <label for="foto">Foto:</label>
             {% if produto['id_foto_prod'] != '' %}
-                <img src="{{ url_for('produto_download_foto', id_foto_prod = produto['id_foto']) }}" id="foto" width="200"/>
+                <img src="{{ url_for('produto_download_foto', id_foto_prod = produto['id_foto_prod']) }}" id="foto" width="200"/>
             {% else %}
                 <img src="{{ url_for('static', filename = 'no-photo.png') }}" id="foto" width="200"/>
             {% endif %}

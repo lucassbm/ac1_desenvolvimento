@@ -287,10 +287,11 @@ def form_criar_produto_api():
 
     # Faz o processamento.
     lista = db_listar_feiras_ordem()
+    feirantes = db_listar_feirantes()
     produto = {'id_produto': 'novo', 'nome_produto': '', 'valor': '', 'quantidade': '', 'id_feira': '','id_feirante': '', 'id_foto_prod': ''}
 
     # Monta a resposta.
-    return render_template("form_produto.html", logado = logado, produto = produto, feiras = lista)
+    return render_template("form_produto.html", logado = logado, produto = produto, feiras = lista, feirantes = feirantes)
 
 # Tela com o formulário de alteração de um aluno existente.
 @app.route("/produto/<int:id_produto>", methods = ["GET"])
@@ -303,11 +304,12 @@ def form_alterar_produto_api(id_produto):
     # Faz o processamento.
     produto = db_consultar_produto(id_produto)
     feiras = db_listar_feiras_ordem()
+    feirantes = db_listar_feirantes()
 
     # Monta a resposta.
     if produto is None:
         return render_template("menu.html", logado = logado, mensagem = f"Esse produto não existe."), 404
-    return render_template("form_produto.html", logado = logado, produto = produto, feiras = feiras)
+    return render_template("form_produto.html", logado = logado, produto = produto, feiras = feiras, feirantes = feirantes)
 
 # Processa o formulário de criação de alunos. Inclui upload de fotos.
 @app.route("/produto/novo", methods = ["POST"])
@@ -325,7 +327,7 @@ def criar_produto_api():
     id_feirante = request.form["id_feirante"]
 
     # Faz o processamento.
-    produto = criar_produto(nome_produto, valor, quantidade, id_feira, id_feirante, salvar_arquivo_upload)
+    produto = criar_produto(nome_produto, valor, quantidade, id_feira, id_feirante, salvar_arquivo_upload_produto)
 
     # Monta a resposta.
     mensagem = f"O produto {nome_produto} foi criado com o id {produto['id_produto']}." 
@@ -347,7 +349,7 @@ def editar_produto_api(id_produto):
     id_feirante = request.form["id_feirante"]
 
     # Faz o processamento.
-    status, produto = editar_produto(id_produto, nome_produto, valor, quantidade, id_feira, id_feirante, salvar_arquivo_upload, deletar_foto)
+    status, produto = editar_produto(id_produto, nome_produto, valor, quantidade, id_feira, id_feirante, salvar_arquivo_upload_produto, deletar_foto)
 
     # Monta a resposta.
     if status == 'não existe':
@@ -423,6 +425,18 @@ def salvar_arquivo_upload():
             return n
     return ""
 
+def salvar_arquivo_upload_produto():
+    import uuid
+    if "foto" in request.files:
+        foto = request.files["foto"]
+        e = extensao_arquivo(foto.filename)
+        if e in ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp']:
+            u = uuid.uuid1()
+            n = f"{u}.{e}"
+            foto.save(os.path.join("flask-jinja2-crud-master","produtos_fotos", n))
+            return n
+    return ""
+
 def deletar_foto(id_foto):
     if id_foto == '': return
     p = os.path.join("feirantes_fotos", id_foto)
@@ -469,6 +483,7 @@ def criar_produto(nome_produto, valor, quantidade, id_feira, id_feirante, salvar
 
 def editar_produto(id_produto, nome_produto, valor, quantidade, id_feira, id_feirante, salvar_foto, apagar_foto):
     produto = db_consultar_produto(id_produto)
+    print(produto)
     if produto is None:
         return 'não existe', None
     id_foto_prod = salvar_foto()
@@ -580,12 +595,12 @@ def db_verificar_feira(bairro, horario, dia):
 
 def db_consultar_produto(id_produto):
     with closing(conectar()) as con, closing(con.cursor()) as cur:
-        cur.execute("SELECT prod.id_produto, prod.nome_produto, prod.valor, prod.quantidade, prod.id_feira, prod.id_feirante, f.bairro, fe.nome_feirante, fe.barraca FROM produto prod INNER JOIN feira f ON prod.id_feira = f.id_feira INNER JOIN feirante fe ON prod.id_feirante = fe.id_feirante WHERE prod.id_produto = ? ", [id_produto])
+        cur.execute("SELECT prod.id_produto, prod.nome_produto, prod.valor, prod.quantidade, prod.id_feira, prod.id_feirante, prod.id_foto_prod, f.bairro, fe.nome_feirante, fe.barraca FROM produto prod INNER JOIN feira f ON prod.id_feira = f.id_feira INNER JOIN feirante fe ON prod.id_feirante = fe.id_feirante WHERE prod.id_produto = ? ", [id_produto])
         return row_to_dict(cur.description, cur.fetchone())
     
 def db_listar_produtos():
     with closing(conectar()) as con, closing(con.cursor()) as cur:
-        cur.execute("SELECT prod.id_produto, prod.nome_produto, prod.valor, prod.quantidade, prod.id_feira, prod.id_feirante, f.bairro, fe.nome_feirante, fe.barraca FROM produto prod INNER JOIN feira f ON prod.id_feira = f.id_feira INNER JOIN feirante fe ON prod.id_feirante = fe.id_feirante ORDER BY prod.nome_produto ASC")
+        cur.execute("SELECT prod.id_produto, prod.nome_produto, prod.valor, prod.quantidade, prod.id_feira, prod.id_feirante, prod.id_foto_prod, f.bairro, fe.nome_feirante, fe.barraca FROM produto prod INNER JOIN feira f ON prod.id_feira = f.id_feira INNER JOIN feirante fe ON prod.id_feirante = fe.id_feirante ORDER BY prod.nome_produto ASC")
         return rows_to_dict(cur.description, cur.fetchall())
 
 def db_criar_produto(nome_produto, valor, quantidade, id_feira, id_feirante, id_foto_prod):
@@ -597,7 +612,7 @@ def db_criar_produto(nome_produto, valor, quantidade, id_feira, id_feirante, id_
     
 def db_editar_produto(id_produto, nome_produto, valor, quantidade, id_feira, id_feirante, id_foto_prod):
     with closing(conectar()) as con, closing(con.cursor()) as cur:
-        cur.execute("UPDATE produto SET nome_produto = ?,valor = ?, quantidade = ?, id_feira = ?, id_feirante = ?, id_foto_prod = ? WHERE id_produto = ?", [nome_produto, valor, quantidade, id_feira, id_feirante, id_foto_prod])
+        cur.execute("UPDATE produto SET nome_produto = ?,valor = ?, quantidade = ?, id_feira = ?, id_feirante = ?, id_foto_prod = ? WHERE id_produto = ?", [nome_produto, valor, quantidade, id_feira, id_feirante, id_foto_prod, id_produto])
         con.commit()
         return {'id_produto': id_produto, 'nome_produto': nome_produto, 'valor': valor, 'quantidade': quantidade, 'id_feira': id_feira, 'id_feirante': id_feirante, 'id_foto_prod': id_foto_prod}
     

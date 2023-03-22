@@ -18,6 +18,11 @@
                 <td>{{feirante['barraca']}}</td>
                 <td>{% if feirante['sexo'] == 'M' %}Masculino{% else %}Feminino{% endif %}</td>
                 <td>{{feirante['bairro']}}</td>
+                <td>{% if feirante['id_foto'] != '' %}
+                    <img src="{{ url_for('feirante_download_foto', id_foto = feirante['id_foto']) }}" id="foto" width="100"/>
+                {% else %}
+                    <img src="{{ url_for('static', filename = 'no-photo.png') }}" id="foto" width="100"/>
+                {% endif %}</td>
                 <td><a href="/feirante/{{feirante['id_feirante']}}">Editar</a></td>
             </tr>
         {% endfor %}
