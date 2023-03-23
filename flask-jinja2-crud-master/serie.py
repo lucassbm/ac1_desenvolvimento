@@ -118,7 +118,8 @@ def criar_feira_api():
 
     # Faz o processamento.
     ja_existia, feira = criar_feira(bairro, horario, dia)
-
+    print(ja_existia)
+    print(feira)
     # Monta a resposta.
     mensagem = f"A feira do bairro {bairro} já existia com o id {feira['id_feira']}." if ja_existia else f"A feira do bairro {bairro} foi criada com id {feira['id_feira']}."
     return render_template("menu.html", logado = logado, mensagem = mensagem)
@@ -421,7 +422,7 @@ def salvar_arquivo_upload():
         if e in ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp']:
             u = uuid.uuid1()
             n = f"{u}.{e}"
-            foto.save(os.path.join("flask-jinja2-crud-master","feirantes_fotos", n))
+            foto.save(os.path.join("ifroot-master","flask-jinja2-crud-master/feirantes_fotos", n))
             return n
     return ""
 
@@ -433,7 +434,7 @@ def salvar_arquivo_upload_produto():
         if e in ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp']:
             u = uuid.uuid1()
             n = f"{u}.{e}"
-            foto.save(os.path.join("flask-jinja2-crud-master","produtos_fotos", n))
+            foto.save(os.path.join("ifroot-master","flask-jinja2-crud-master/produtos_fotos", n))
             return n
     return ""
 
@@ -668,4 +669,4 @@ def db_fazer_login(login, senha):
 
 if __name__ == "__main__":
     db_inicializar()
-    app.run()
+    app.run(debug=True)

@@ -118,13 +118,13 @@
             {% endif %}
             <label for="foto" class="upload">Upload<input type="file" name="foto" /></label>
             {% if produto['id_foto_prod'] != '' %}
-                <button type="button" onclick="javascript:apagar_foto();">Excluir foto</button>
+                <button class="btn-default" type="button" onclick="javascript:apagar_foto();">Excluir foto</button>
             {% endif  %}
         </p>
         <p>
-            <button type="submit">Salvar</button>
-            {% if produto['id_produto'] != 'novo' %}<button type="button" onclick="javascript:excluir();">Excluir</button>{% endif %}
+            <button type="submit" class="btn-default">Salvar</button>
+            {% if produto['id_produto'] != 'novo' %}<button type="button" class="btn-default" onclick="javascript:excluir();">Excluir</button>{% endif %}
         </p>
     </form>
-    <p><a href="/">Voltar</a></p>
+    <button class="btn-default"><a href="/">Voltar</a></button>
 {% endblock %}

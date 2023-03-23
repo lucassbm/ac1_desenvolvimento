@@ -1,3 +1,16 @@
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">IFROOT</a>
+      </div>
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">Menu</a></li>
+        <li><a href="/produto">Lista de Produtos</a></li>
+        <li><a href="/feira">Lista Feira</a></li>
+      </ul>
+    </div>
+  </nav>
+  
 {% extends "base.html" %}
 {% block titulo %}Cadastro{% endblock %}
 {% block js %}
@@ -9,13 +22,22 @@
     {% if mensagem != '' %}
         <h2>{{mensagem}}</h2>
     {% endif %}
-    <p>Escolha a opção que você quer:</p>
-    <p><a href="/feirante">Listar feirantes</a></p>
+    <h1>Escolha a opção que você quer:</h1>
+    <!-- <p><a href="/feirante">Listar feirantes</a></p>
     <p><a href="/feira">Listar feiras</a></p>
     <p><a href="/produto">Listar produtos</a></p>
     <p><a href="/feirante/novo">Cadastrar feirante</a></p>
     <p><a href="/feira/novo">Cadastrar feira</a></p>
-    <p><a href="/produto/novo">Cadastrar produto</a></p>
-    <p><a href="#" onclick="javascript:logout()">Logout</a></p>
+    <p><a href="/produto/novo">Cadastrar produto</a></p> -->
+
+    <div class="list-group">
+        <a class="list-group-item" href="/feirante">Listar feirantes</a>
+        <a class="list-group-item" href="/feira">Listar feiras</a>
+        <a class="list-group-item" href="/produto">Listar produtos</a>
+        <a class="list-group-item" href="/feirante/novo">Cadastrar feirante</a>
+        <a class="list-group-item" href="/feira/novo">Cadastrar feira</a>
+        <a class="list-group-item" href="/produto/novo">Cadastrar produto</a>
+      </div>
+      <button><a class="btn-default" onclick="javascript:logout()">Sair</a></button>
     <form action="/logout" id="form_logout" method="POST" style="display: none"></form>
 {% endblock %}
